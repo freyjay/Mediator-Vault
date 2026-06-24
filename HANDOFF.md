@@ -1,6 +1,6 @@
 # mn-vault — Engineering Handoff
 
-**Status:** pre-release (v0.1.0). Logic + lifecycle verified and tested in-sandbox; SDK symbol layer still inferred (needs `tsc` + a testnet dry-run on the build machine). Not yet reviewed by a second cryptographer — required before guarding a mainnet seed.
+**Status:** pre-release (v1.0.0-S). Logic + lifecycle verified and tested in-sandbox; SDK symbol layer still inferred (needs `tsc` + a testnet dry-run on the build machine). Not yet reviewed by a second cryptographer — required before guarding a mainnet seed.
 
 **What this is:** a local signing vault that houses a Midnight wallet seed so an AI assistant can **never read it**. The seed is sealed at rest (Argon2id + AES-256-GCM); signing happens behind a boundary that returns only a finalized transaction, never key material.
 
@@ -412,7 +412,7 @@ Verified mechanically:
 - **Single-source logic:** display sanitizer defined once (`net-ids`), value parsing unified to one `parseAtoms()` (4 callers, 1 definition). The duplication that caused the earlier "fixed-here-not-its-twin" bugs is consolidated.
 - **Balance:** all 10 source modules brace/paren-balanced.
 
-**Tests:** 113 assertions, all green. **Version stamped `1.0.0-S`.**
+**Tests:** 103 assertions, all green. **Version stamped `1.0.0-S`.**
 
 **Unchanged finish line:** this is whole-system *structural* soundness. `sign-core` still rests on
 39 inferred SDK symbols. `npx tsc --noEmit`, a preprod dry-run, and a second cryptographer on the

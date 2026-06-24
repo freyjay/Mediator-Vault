@@ -1,5 +1,24 @@
 # mn-vault
 
+> **At a glance** — a local vault that holds a Midnight wallet seed so an **AI assistant can
+> never read it**. The seed is sealed on disk (Argon2id + AES‑256‑GCM) and only ever unlocked
+> briefly inside one signing process; nothing returns the seed or any derived key — only a
+> finalized transaction.
+>
+> | | |
+> |---|---|
+> | **What it is** | A signing vault with two editions (install one): 🍎 **apple** = one‑shot signer (no daemon); 🍊 **orange** = warm‑key daemon that signs only with out‑of‑band human approval. |
+> | **Guarantee (in scope)** | The AI can never *read* the seed — architectural, not a policy. Verified logic + 103 tests. |
+> | **Out of scope** | A same‑UID attacker reading process memory, or root. |
+> | **Needs** | Node ≥ 20 · npm · git. |
+> | **Install** | `git clone <REPO_URL> && cd mn-vault && npm install && npx tsc --noEmit && npm test` |
+> | **Status** | `1.0.0-S` — pre‑release. SDK symbols **inferred**: run `npx tsc --noEmit`, then a preprod dry‑run + 2nd cryptographer review **before any mainnet seed**. |
+> | **Top 3 don'ts** | ① never paste your seed / `.env` into an AI ② never commit `~/.mn-vault/*`, `PROOF-OF-EXPOSURE.md`, or `.env` ③ if `npx tsc` offers `tsc@2.0.4`, say **no**. |
+>
+> Full detail below: [Prerequisites](#prerequisites) · [Install & verify](#install-verify) · [What NOT to do](#-what-not-to-do) · [Editions](#two-editions-pick-the-one-that-fits-your-workflow)
+
+---
+
 **In plain terms:** a safe for your Midnight wallet seed, so an **AI assistant can never
 read it**. The seed is locked up, and only gets briefly unlocked inside the one small
 program that signs a transaction — never handed to the AI, never printed, never logged.
@@ -8,6 +27,108 @@ program that signs a transaction — never handed to the AI, never printed, neve
 (authenticated encryption) and exists in plaintext only transiently, inside the single
 signing process. No tool, log, or API response ever returns the seed or any derived secret
 key (shielded/ dust/ unshielded signing keys).
+
+---
+
+## Prerequisites
+
+**Plain:** you need Node.js (a JavaScript runtime), its bundled `npm`, and `git`. Nothing else
+is installed globally — the TypeScript compiler comes with the project.
+
+**Technical:**
+- **Node.js ≥ 20** (developed/run on **v22.x**; `@types/node` pinned to the 20.x type surface).
+- **npm** (ships with Node) · **git** to clone.
+- **Do not** install a global `typescript`/`tsc` — the pinned compiler (`typescript@5.9.3`)
+  resolves locally from `node_modules` after `npm install`.
+- Platform: macOS / Linux / Windows. The daemon edition uses a `0600` Unix-domain socket on
+  macOS/Linux; the human-approval transport is a portable file queue (works on Windows too).
+
+---
+
+## Install & verify
+
+**Plain:** clone it, install dependencies, then run two checks — one that confirms the code
+matches the real Midnight libraries, one that runs the test suite. Do this in a throwaway
+folder first to confirm it works before you trust it with anything.
+
+**Technical:**
+```bash
+git clone <REPO_URL> mn-vault && cd mn-vault
+npm install                 # resolves the pinned Midnight SDK + dev tooling
+npx tsc --noEmit            # type-checks the signing core against the real SDK (the gate)
+npm test                    # 103 assertions across 8 suites
+```
+A clean `tsc` run (no output) means the ~39 SDK symbols in `src/sign-core.ts` are **verified**,
+not just inferred. Full procedure, expected output, and failure handling:
+**`VERIFYING-A-CLEAN-INSTALL.md`**.
+
+> This repo is the shared **source**. To produce the two installable editions, run
+> `npm run build:editions` (see the contributors section below).
+
+---
+
+## ⚠️ What NOT to do
+
+**Plain — the short list that keeps you safe:**
+- **Never paste your seed (or `.env`) into an AI chat, or run the seal step "through" an AI.**
+  Seal it yourself in a normal terminal. The whole point of this tool is that the AI never sees
+  the seed — don't hand it over by accident.
+- **Never commit runtime files to git** — the sealed seed, `PROOF-OF-EXPOSURE.md`, `.env`, the
+  lock/audit/queue files. They live in `~/.mn-vault/`, not in the repo. (The included
+  `.gitignore` blocks the common ones, but check before you commit.)
+- **If `npx tsc` ever offers to install `tsc@2.0.4`, say NO** — that's an abandoned, unrelated
+  package. The real compiler came from `npm install`.
+- **Don't run both editions on the same machine** — pick apple *or* orange.
+- **Don't trust it with real (mainnet) funds yet** — verify first (below).
+
+**Technical — the same, precisely:**
+- **Seed handling:** the seal ceremony (`vault-seal`) reads the seed from a hidden prompt and
+  must be run on a trusted TTY, never proxied through an AI/agent session. The seed is encrypted
+  to bytes (Argon2id → AES-256-GCM) and never logged; keeping it out of AI context is an
+  operational responsibility the architecture cannot enforce for you at input time.
+- **Repo hygiene:** never commit `~/.mn-vault/*` (`*.sealed*`, `edition.lock`, `audit.log`,
+  `pending/`), `PROOF-OF-EXPOSURE.md`, or any `.env`. Git history is permanent — a secret in one
+  commit is exposed even if deleted later. Verify with `git status` (and a `grep -rIl -E
+  '[0-9a-fA-F]{64}'` scan) before the first commit.
+- **Toolchain:** do not float the `@midnight-ntwrk/*` pins (see `pin-rationale` in
+  `package.json`) — the signing surface was verified against exact versions; a surprise SDK bump
+  can silently change signing semantics. Don't add a `preinstall` hook to this source repo (it
+  has no edition identity).
+- **Mutual exclusion:** apple and orange must not coexist; `claimEdition()` enforces this at
+  runtime via `~/.mn-vault/edition.lock`. Running both is unsupported, not merely discouraged.
+- **Trust boundary:** **not** verified end-to-end. Before a mainnet seed: a preprod testnet
+  dry-run (live SDK signing path) **and** a second human cryptographer review of the
+  `signIntents` per-input signing path. In scope: the AI can never *read* the seed
+  (architectural). Out of scope: a same-UID attacker reading process memory, or root.
+
+---
+
+## Reading this repository (for contributors)
+
+**This repo is the shared *source*, not a shippable package.** It contains the code that
+**both** editions are built from. Two thin entry points wrap one shared signing core
+(`src/sign-core.ts`), so the cryptography cannot differ between editions:
+
+- 🍎 **apple** (`src/sign-once.ts`) — one-shot signer, no daemon.
+- 🍊 **orange** (`src/vault.ts` + `src/approve.ts`) — warm-key daemon with out-of-band human approval.
+
+The two installable packages are produced by `npm run build:editions`, which assembles each
+edition into its own artifact (with its own `package.json` from `editions/`). **Only those
+built editions carry the install-time edition guard** (`scripts/preinstall.mjs`, wired via the
+`preinstall` hook in `editions/package.apple.json` / `editions/package.orange.json`). This
+combined source repo intentionally has **no** `preinstall` hook, because it has no single
+edition identity — it is neither apple nor orange. Do not add one here.
+
+**The load-bearing mutual-exclusion guarantee does not depend on that install hook.** It is
+enforced at **run time**: every signing entry point calls `claimEdition()` (`src/edition.ts`)
+before reading the seed or opening a socket, using an atomic lock at `~/.mn-vault/edition.lock`.
+So even running directly from this source tree, you cannot run both signing surfaces on one
+machine — the second to start is refused. The preinstall hook is a courtesy that catches the
+common case early; `claimEdition` is the actual guarantee.
+
+**To verify the build before trusting it:** `npm install` then `npx tsc --noEmit` (this
+type-checks the signing core against the pinned Midnight SDK — see `VERSION` and the
+`pin-rationale` in `package.json`), then `npm test` (103 assertions; see `tests/TEST-CATALOG.md`).
 
 ---
 
