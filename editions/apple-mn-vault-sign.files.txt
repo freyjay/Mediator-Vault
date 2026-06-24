@@ -1,0 +1,10 @@
+# mn-vault-sign (APPLE / Path A) — ships these compiled files ONLY.
+# NOTE: vault.ts (the daemon) is DELIBERATELY ABSENT. An apple install has no
+# daemon bytes on disk — nothing to start, accidentally or otherwise.
+dist/types.js
+dist/net-ids.js
+dist/edition.js
+dist/sign-core.js
+dist/seal.js
+dist/sign-once.js
+dist/vault-client.js

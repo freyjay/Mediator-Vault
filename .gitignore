@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Runtime vault artifacts — MUST NEVER be committed (seed protection)
+.mn-vault/
+*.sealed
+*.sealed.json
+edition.lock
+audit.log
+pending/
+PROOF-OF-EXPOSURE.md
+*.env
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+*.log
+*.tmp
+*.bak

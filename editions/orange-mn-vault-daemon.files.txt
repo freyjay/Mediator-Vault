@@ -1,0 +1,10 @@
+# mn-vault-daemon (ORANGE / Path B) — ships these compiled files ONLY.
+# NOTE: sign-once.ts (the one-shot signer) is ABSENT. An orange install is the
+# daemon edition; the one-shot CLI is not part of it.
+dist/types.js
+dist/net-ids.js
+dist/edition.js
+dist/sign-core.js
+dist/seal.js
+dist/vault.js
+dist/vault-client.js

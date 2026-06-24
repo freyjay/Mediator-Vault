@@ -1,0 +1,5 @@
+mn-vault 1.0.0-S
+stamped 2026-06-24
+tests: 103 assertions across 8 suites
+SDK pins: ledger-v8 8.0.3, wallet-sdk-hd 3.0.2, unshielded-wallet 2.1.0, facade 3.0.0
+STATUS: hardened logic; SDK symbols inferred — run 'npx tsc --noEmit' to verify before mainnet

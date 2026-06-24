@@ -1,0 +1,33 @@
+{
+  "name": "mn-vault-sign",
+  "version": "1.0.0-S",
+  "type": "module",
+  "description": "APPLE edition (Path A): one-shot human-in-the-loop Midnight seed signer. NO daemon, no socket — nothing listens. Mutually exclusive with mn-vault-daemon.",
+  "bin": {
+    "vault-seal": "dist/seal.js",
+    "vault-sign": "dist/sign-once.js"
+  },
+  "files": [
+    "dist/types.js",
+    "dist/net-ids.js",
+    "dist/edition.js",
+    "dist/sign-core.js",
+    "dist/seal.js",
+    "dist/sign-once.js",
+    "dist/vault-client.js",
+    "README.md",
+    "scripts/preinstall.mjs"
+  ],
+  "scripts": {
+    "preinstall": "node scripts/preinstall.mjs sign"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/ledger-v8": "8.0.3",
+    "@midnight-ntwrk/wallet-sdk-hd": "3.0.2",
+    "@midnight-ntwrk/wallet-sdk-unshielded-wallet": "2.1.0",
+    "@midnight-ntwrk/wallet-sdk-facade": "3.0.0",
+    "argon2": "^0.41.1"
+  },
+  "edition": "sign",
+  "excludes-by-design": "dist/vault.js (the daemon) is NOT shipped in this package. An apple install has no daemon on disk."
+}

@@ -1,0 +1,37 @@
+{
+  "name": "@blaze-systems/mn-vault",
+  "version": "1.0.0-S",
+  "type": "module",
+  "description": "A local signing vault that houses a Midnight seed so an AI assistant can never read it. Two paths: minimal one-shot signer (default) and an opt-in signing daemon.",
+  "bin": {
+    "vault": "dist/vault.js",
+    "vault-seal": "dist/seal.js",
+    "vault-sign": "dist/sign-once.js",
+    "vault-approve": "dist/approve.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "seal": "tsx src/seal.ts",
+    "sign": "tsx src/sign-once.ts",
+    "start": "tsx src/vault.ts",
+    "start:daemon": "tsx src/vault.ts",
+    "test": "node tests/guard.test.mjs && node tests/signing.test.mjs && node tests/lifecycle.test.mjs && node tests/decode.test.mjs && node tests/runtime.test.mjs && node tests/edition.test.mjs && node tests/approval.test.mjs && node tests/display.test.mjs",
+    "build:editions": "node scripts/build-editions.mjs",
+    "approve": "tsx src/approve.ts",
+    "version:stamp": "node scripts/stamp-version.mjs"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/ledger-v8": "8.0.3",
+    "@midnight-ntwrk/wallet-sdk-hd": "3.0.2",
+    "@midnight-ntwrk/wallet-sdk-unshielded-wallet": "2.1.0",
+    "@midnight-ntwrk/wallet-sdk-facade": "3.0.0",
+    "argon2": "^0.41.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.41",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3"
+  },
+  "pin-rationale": "ledger-v8 pinned to 8.0.3 — the version verified on disk (signingKeyFromBip340/signData/signatureVerifyingKey present). Do NOT float to 8.1.x without re-verifying the signing surface. The seed-signer must never get a surprise SDK bump. wallet-sdk-facade 3.0.0 is the v8 set per the deploy breadcrumbs; confirm on tsc."
+}

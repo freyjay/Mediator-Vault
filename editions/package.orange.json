@@ -1,0 +1,36 @@
+{
+  "name": "mn-vault-daemon",
+  "version": "1.0.0-S",
+  "type": "module",
+  "description": "ORANGE edition (Path B): long-lived Midnight signing daemon over a 0600 socket, for frequent unattended signing. Discloses the same-uid USE trade-off. Mutually exclusive with mn-vault-sign.",
+  "bin": {
+    "vault-seal": "dist/seal.js",
+    "vault": "dist/vault.js",
+    "vault-approve": "dist/approve.js"
+  },
+  "files": [
+    "dist/types.js",
+    "dist/net-ids.js",
+    "dist/edition.js",
+    "dist/sign-core.js",
+    "dist/seal.js",
+    "dist/vault.js",
+    "dist/vault-client.js",
+    "README.md",
+    "scripts/preinstall.mjs",
+    "dist/approval.js",
+    "dist/approve.js"
+  ],
+  "scripts": {
+    "preinstall": "node scripts/preinstall.mjs daemon"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/ledger-v8": "8.0.3",
+    "@midnight-ntwrk/wallet-sdk-hd": "3.0.2",
+    "@midnight-ntwrk/wallet-sdk-unshielded-wallet": "2.1.0",
+    "@midnight-ntwrk/wallet-sdk-facade": "3.0.0",
+    "argon2": "^0.41.1"
+  },
+  "edition": "daemon",
+  "excludes-by-design": "dist/sign-once.js (the one-shot signer) is NOT shipped in this package."
+}
